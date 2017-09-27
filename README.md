@@ -47,7 +47,4 @@ Fallback workflow, if you are running into problems with the automatic conversio
 
 9) Process the images as described here: https://github.com/jbostoen/ZTStudio/wiki/How-to-create-a-color-palette-to-share-with-several-graphics-(views,-animations)-using-GIMP If you don't do this, ZT Studio will raise an error because every image has too many colors.
 
-10) Open ZT Studio. Make sure you have the files in "C:/temp/output" now. Change ZT Studio's settings like this:
-Conversions > Batch Conversions > Start Numbering at Frame 0
-Writing PNG Files > Crop to relevant pixels of this frame (might not be needed)
-Run the Batch Conversion feature and you should get ZT1 animations and palettes.
+10) Open ZT Studio. Make sure you have the files in "C:/temp/output" now. Change ZT Studio's settings like this: Conversions > Batch Conversions > Start Numbering at Frame 0; Writing PNG Files > Crop to relevant pixels of this frame (might not be needed). Run the Batch Conversion feature and you should get ZT1 animations and palettes.
