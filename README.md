@@ -3,7 +3,8 @@ A plugin to automize sprite rendering for Zoo Tycoon 1.
 
 Automatic ZT1 Sprite Rendering for blender 2.78+
 
-Select the ZIP file containing this readme by clicking "File > User Preferences > Addons > Install from File..."
+Be careful when downloading files, you should unzip and then rezip it without the parent folder.
+In blender, select the re-zipped file by clicking "File > User Preferences > Addons > Install from File..."
 Confirm with "Install from File..."
 Tick the box at the right to enable the script.
 Click "Save User Settings" at the bottom.
