@@ -294,7 +294,7 @@ def render_sprites(batch=False):
 						break
 			except:
 				print("There is no buoy or comparable node!")
-				buoy = armature.pose.bones.values()[0]
+				buoy = armature.pose.bones.keys()[0]
 			matrix_final = armature.matrix_world * armature.pose.bones[buoy].matrix
 			
 			#this means the underside will be drawn
