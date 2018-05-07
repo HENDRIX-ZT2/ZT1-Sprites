@@ -1,16 +1,16 @@
-# ZT1-Sprites
+## ZT1-Sprites
 A plugin to automize sprite rendering for Zoo Tycoon 1.
 
 Automatic ZT1 Sprite Rendering for blender 2.78+, using FFMPEG and https://github.com/jbostoen/ZTStudio.
 
-You'll have to edit the folder structure when downloading files from Github: You must unzip and then rezip it without the parent folder.
-In blender, select the re-zipped file by clicking "File > User Preferences > Addons > Install from File..."
-Confirm with "Install from File..."
-Tick the box at the right to enable the script.
-Click "Save User Settings" at the bottom.
-Then the new ZT1 Rendering panel will appear in the Render tab.
 
-How to use:
+### Installation
+- Click the `Clone or Download` button at the right, then `Download ZIP`.
+- To install with the addon installer in Blender, click `File` > `User Preferences` > `Add-ons` > `Install Add-ons from File` and select the ZIP you just downloaded.
+- Confirm with "Install from File..."
+- Tick the box at the right to enable the script. Click "Save User Settings" at the bottom. Then the new ZT1 Rendering panel will appear in the Render tab.
+
+### How to use
 
 Both static objects and animated animals etc. are supported. So you can ignore the parts that refer to animations if you just want still objects.
 
@@ -40,9 +40,8 @@ Locate the "Output" field. Specify where the files should be created. ZT Studio 
 10) Once your palettes are all edited, click the "Convert Sprites to ZT1" button. This will first run FFMPEG to apply this palette to all files. Lastly, it will run a batch processing operation in ZT Studio to convert all PNGs to ZT1 graphics, which you can then add to your projects.
 
 
-
-
-Fallback workflow, if you are running into problems with the automatic conversion workflow.
+### Fallback workflow
+Only use if you are running into problems with the automatic conversion
 
 1-8) as above
 
