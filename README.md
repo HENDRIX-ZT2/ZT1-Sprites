@@ -7,7 +7,7 @@ Automatic ZT1 Sprite Rendering for blender 2.78+, using FFMPEG and https://githu
 ### Installation
 - Click the `Clone or Download` button at the right, then `Download ZIP`.
 - To install with the addon installer in Blender, click `File` > `User Preferences` > `Add-ons` > `Install Add-ons from File` and select the ZIP you just downloaded.
-- Confirm with `Install from File..."
+- Confirm with `Install from File...`
 - Tick the box at the right to enable the script. Click `Save User Settings` at the bottom. Then the new ZT1 Rendering panel will appear in the Render tab.
 
 ### How to use
@@ -33,7 +33,7 @@ Locate the `Output` field. Specify where the files should be created. ZT Studio 
 
 7) For ZT2 imports: Try each of the _muting buttons_ in the `ZT1 Sprite Rendering` Tab and see when walk or run animations become stationary. That means they no longer move forwards and walk on a treadmill. You could also do this manually in the Action editor, and of course this step is not needed if you made your own anims to begin with. The channel muting is a little intelligent. It will not mute anything if Bip01 is in roughly the same position at the first and last frame. This prevents sliding in such cases if Bip01 was animated.
 
-8) Once you have done that, click `Render all Sprites". Alternatively, you can also render out only the current anim. This is especially useful if you have effects on some anims but not on others (like ripples and splashes), or if you've changed something and don't want to render everything again.
+8) Once you have done that, click `Render all Sprites`. Alternatively, you can also render out only the current anim. This is especially useful if you have effects on some anims but not on others (like ripples and splashes), or if you've changed something and don't want to render everything again.
 
 9) Now you have to create the color palette for your animations. First select an animation (in the action editor) that contains all colours you will need, including those for effects (splashes, dust, etc) and such. Then make sure you set your output file path in blender correctly. This is relevant for palette generation. If you select .../output/animals/CODENAME, you will get a shared palette for all life stages (sourced from m). If you specify .../output/animals/CODENAME/m, you only process the male files and they receive their own palette. You can then process the other life stages individually. Click _Generate Color Palette_ for each new palette. This will produce a png file in the folder you specified in output, with the name of the parent folder. Open this palette png file and move the bright green pixel into the top left corner. Swap the pixel there with the one where the green one was. This is required to make the conversion work flawlessly.
 
