@@ -1,9 +1,12 @@
 bl_info = {	"name": "Render ZT1 Sprites",
 			"author": "HENDRIX",
-			"blender": (2, 78, 0),
+			"blender": (2, 80, 0),
 			"location": "Render > ZT1 Sprites",
 			"description": "Sets up and renders sprites for all animations, for all angles.",
 			"warning": "",
+			"wiki_url": "https://github.com/HENDRIX-ZT2/ZT1-Sprites",
+			"support": 'COMMUNITY',
+			"tracker_url": "https://github.com/HENDRIX-ZT2/ZT1-Sprites/issues/new",
 			"category": "Render"}
 import bpy
 from bpy.props import CollectionProperty
@@ -14,85 +17,88 @@ import os
 import time
 import subprocess
 
-def select_layer(layer_nr): return tuple(i == layer_nr for i in range(0, 20))
-
+def create_ob(ob_name, ob_data):
+	ob = bpy.data.objects.new(ob_name, ob_data)
+	bpy.context.scene.collection.objects.link(ob)
+	bpy.context.view_layer.objects.active = ob
+	return ob
+	
+def mesh_from_data(name, verts, faces, wireframe = True):
+	me = bpy.data.meshes.new(name)
+	me.from_pydata(verts, [], faces)
+	me.update()
+	ob = create_ob(name, me)
+	if wireframe:
+		ob.display_type = 'WIRE'
+	return ob, me
+	
 def create_empty(parent,name,matrix):
-	empty = bpy.data.objects.new(name, None)
-	bpy.context.scene.objects.link(empty)
+	empty = create_ob(name, None)
 	if parent:
 		empty.parent = parent
 	empty.matrix_local = matrix
-	empty.empty_draw_type="ARROWS"
+	empty.empty_display_type="ARROWS"
 	return empty
 	
 def create_boolean(size):
-	shadowname = "boolean"
-	me = bpy.data.meshes.new(shadowname)
-	me.from_pydata([(1.0, 1.0, -2.0),
-				 (1.0, -1.0, -2.0),
-				(-1.0, -1.0, -2.0),
-				(-1.0, 1.0, -2.0),
-				 (1.0, 1.0, 0.0),
-				 (1.0, -1.0, 0.0),
-				(-1.0, -1.0, 0.0),
-				(-1.0, 1.0, 0.0)],
-				(),
-				#these are faces with inverted normals for the boolean
-				[(0, 3, 2, 1),
-				(4, 5, 6, 7),
-				(0, 1, 5, 4),
-				(1, 2, 6, 5),
-				(2, 3, 7, 6),
-				(4, 7, 3, 0)])
-				 
-	me.update()
-	ob = bpy.data.objects.new(shadowname, me)
+	#faces with inverted normals for the boolean
+	ob, me = mesh_from_data("boolean", 
+							[(1.0, 1.0, -2.0),
+							 (1.0, -1.0, -2.0),
+							 (-1.0, -1.0, -2.0),
+							 (-1.0, 1.0, -2.0),
+							 (1.0, 1.0, 0.0),
+							 (1.0, -1.0, 0.0),
+							 (-1.0, -1.0, 0.0),
+							 (-1.0, 1.0, 0.0) ],
+							 [(0, 3, 2, 1),
+							 (4, 5, 6, 7),
+							 (0, 1, 5, 4),
+							 (1, 2, 6, 5),
+							 (2, 3, 7, 6),
+							 (4, 7, 3, 0)])
 	ob.scale = ((size, size, size))
-	bpy.context.scene.objects.link(ob)
-	ob.layers = select_layer(7)
 	return ob
 	
 def create_shadow(size):
 	shadowname = "shadow"
-	me = bpy.data.meshes.new(shadowname)
-	me.from_pydata(((1,1,0), (1,-1,0), (-1,1,0), (-1,-1,0)), (), ((2,3,1,0),))
-	me.update()
-	ob = bpy.data.objects.new(shadowname, me)
+	ob, me = mesh_from_data(shadowname, 
+							((1,1,0), (1,-1,0), (-1,1,0), (-1,-1,0)),
+							((2,3,1,0),) )
 	ob.scale = ((size, size, size))
-	bpy.context.scene.objects.link(ob)
 	if shadowname not in bpy.data.materials:
 		mat = bpy.data.materials.new(shadowname)
-		mat.use_only_shadow = True
-		mat.shadow_only_type = "SHADOW_ONLY"
-		mat.use_cast_shadows = False
-		mat.use_transparency = True
+		ob.cycles.is_shadow_catcher = True
+		ob.cycles_visibility.camera = True
+		ob.cycles_visibility.glossy = False
+		ob.cycles_visibility.scatter = False
+		ob.cycles_visibility.diffuse = False
+		ob.cycles_visibility.transmission = False
+		ob.cycles_visibility.shadow = False
 	else: mat = bpy.data.materials[shadowname]
 	me.materials.append(mat)
-	for f in me.polygons:
-		f.material_index = 0
+	me.polygons[0].material_index = 0
 	return ob
 	
 def create_camera(matrix):
 	camd = bpy.data.cameras.new("CAMERA")
-	cam = bpy.data.objects.new("CAMERA", camd)
-	bpy.context.scene.objects.link(cam)
-	cam.matrix_local = matrix
 	camd.type = "ORTHO"
-	bpy.context.scene.camera = cam
+	ob = create_ob("CAMERA", camd)
+	ob.matrix_local = matrix
+	bpy.context.scene.camera = ob
 	print("created camera")
-	return cam
+	return ob
 
-def create_lamp(matrix, lamptype="HEMI"):
-	lampd = bpy.data.lamps.new(lamptype, lamptype)
-	lamp = bpy.data.objects.new(lamptype, lampd)
-	bpy.context.scene.objects.link(lamp)
-	lamp.matrix_local = matrix
+def create_light(matrix, lamptype="AREA"):
+	lampd = bpy.data.lights.new(lamptype, lamptype)
+	ob = create_ob(lamptype, lampd)
+	ob.matrix_local = matrix
 	print("created lamp",lamptype)
-	return lamp
+	return ob
 
 def clear_scene():
 	#set the visible layers for this scene
-	bpy.context.scene.layers = [True for i in range(0,20)]
+	# bpy.context.scene.layers = [True for i in range(0,20)]
 	bpy.ops.object.select_all(action='SELECT')
 	bpy.ops.object.delete(use_global=True)
 	for cat in (bpy.data.objects, bpy.data.materials, bpy.data.textures, bpy.data.images, bpy.data.armatures, bpy.data.actions):
@@ -144,10 +150,10 @@ def setup_compositor_nodes():
 	link = links.new(CompositorNodeAlphaOver.outputs[0], CompositorNodeComposite.inputs[0])
 
 	#set position
-	loc = 0
+	x = 0
 	for node in tree.nodes:
-		node.location = loc,0
-		loc+=200
+		node.location = x,0
+		x+=200
 		
 def render_sprites(batch=False):
 	t_start = time.clock()
@@ -169,7 +175,7 @@ def render_sprites(batch=False):
 			if "boolean" in ob.name: continue
 			
 			for v in ob.data.vertices:
-				p = ob.matrix_world*v.co
+				p = ob.matrix_world @ v.co
 				xmax = max(xmax, p[0])
 				ymax = max(ymax, p[1])
 				zmax = max(zmax, p[2])
@@ -185,23 +191,24 @@ def render_sprites(batch=False):
 	print("Render Area:",size)
 	print("Render Size:",16 * size)
 	
+	render = bpy.context.scene.render
 	#16 pixels correspond to 1 ingame meter
-	bpy.context.scene.render.resolution_x = 16 * size
-	bpy.context.scene.render.resolution_y = 16 * size
-	bpy.context.scene.render.resolution_percentage = 100
-	#to get transparent output
-	bpy.context.scene.render.layers[0].use_sky = False
-	#bpy.context.scene.render.use_file_extension
-	bpy.context.scene.render.image_settings.file_format = "PNG"
-	bpy.context.scene.render.image_settings.color_mode = "RGB"
+	render.resolution_x = 16 * size
+	render.resolution_y = 16 * size
+	render.resolution_percentage = 100
+	#render.use_file_extension
+	render.image_settings.file_format = "PNG"
+	render.image_settings.color_mode = "RGB"
+	# render.use_antialiasing = False
+	render.film_transparent = True
+	render.engine = "Cycles"
 	
 	#alpha handling
 	#maybe put it in its own button, if somebody wants to alter the nodes
 	if not bpy.context.scene.use_nodes:
 		setup_compositor_nodes()
-	bpy.context.scene.render.use_antialiasing = False
 	
-	dir_root = bpy.context.scene.render.filepath
+	dir_root = render.filepath
 	
 	matrix = mathutils.Euler((math.radians(45), math.radians(0), math.radians(0))).to_matrix().to_4x4()
 	matrix.translation = mathutils.Vector((0, -10, 10))
@@ -215,12 +222,14 @@ def render_sprites(batch=False):
 	matrix = mathutils.Matrix()
 	matrix.translation = mathutils.Vector((0, 0, 10))
 	
-	if "HEMI" not in bpy.data.lamps:
-		hemi = create_lamp(matrix)
-	if "SUN" not in bpy.data.lamps:
-		sun = create_lamp(matrix, lamptype = "SUN")
-		sun.data.shadow_method = "RAY_SHADOW"
-		sun.data.use_only_shadow = True
+	if "AREA" not in bpy.data.lights:
+		hemi = create_light(matrix)
+		hemi.data.use_shadow = False
+	if "SUN" not in bpy.data.lights:
+		sun = create_light(matrix, lamptype = "SUN")
+		# sun.data.shadow_method = "RAY_SHADOW"
+		# sun.data.use_only_shadow = True
+		sun.data.shadow_buffer_soft = 0.0
 	if "shadow" not in bpy.data.objects:
 		shadow = create_shadow(size)
 	else:
@@ -271,7 +280,7 @@ def render_sprites(batch=False):
 		for view, rot in views:
 			print(view,rot)
 			root.rotation_euler[2] = math.radians(rot)
-			bpy.context.scene.render.filepath = os.path.join(dir_root, view)
+			render.filepath = os.path.join(dir_root, view)
 			ret = bpy.ops.render.render(animation=False, write_still=True)
 			
 	#animated, different views, render the sprites
@@ -295,7 +304,7 @@ def render_sprites(batch=False):
 			except:
 				print("There is no buoy or comparable node!")
 				buoy = armature.pose.bones.keys()[0]
-			matrix_final = armature.matrix_world * armature.pose.bones[buoy].matrix
+			matrix_final = armature.matrix_world @ armature.pose.bones[buoy].matrix
 			
 			#this means the underside will be drawn
 			if "-" in action.name:
@@ -319,22 +328,22 @@ def render_sprites(batch=False):
 				boolean.location[2] = -0.1
 				shadow.location[2] = 0
 			
-			#only shadow
-			if "#" in action.name:
-				for ob in obs:
-					ob.data.materials[0].use_cast_shadows_only = True
-			else:
-				for ob in obs:
-					ob.data.materials[0].use_cast_shadows_only = False
+			# #only shadow
+			# if "#" in action.name:
+				# for ob in obs:
+					# ob.data.materials[0].use_cast_shadows_only = True
+			# else:
+				# for ob in obs:
+					# ob.data.materials[0].use_cast_shadows_only = False
 				
 			for view, rot in views:
 				print(view,rot)
 				root.rotation_euler[2] = math.radians(rot)
 				outname = safename(action.name)
-				bpy.context.scene.render.filepath = os.path.join(dir_root, outname, view)
+				render.filepath = os.path.join(dir_root, outname, view)
 				ret = bpy.ops.render.render(animation=True)
 	#reset in the end
-	bpy.context.scene.render.filepath = dir_root
+	render.filepath = dir_root
 	print("Rendered sprites in "+str(time.clock()-t_start)+" seconds.")
 	
 def safename(action):

@@ -1,8 +1,9 @@
 ## ZT1-Sprites
 A plugin to automize sprite rendering for Zoo Tycoon 1.
 
-Automatic ZT1 Sprite Rendering for blender 2.78+, using FFMPEG and https://github.com/jbostoen/ZTStudio.
+Automatic ZT1 Sprite Rendering for blender 2.80, using FFMPEG and https://github.com/jbostoen/ZTStudio.
 
+###WARNING: This is an experimental branch. Use at your own risk!
 
 ### Installation
 - Click the `Clone or Download` button at the right, then `Download ZIP`.
