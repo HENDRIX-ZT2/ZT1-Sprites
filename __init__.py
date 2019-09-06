@@ -58,6 +58,7 @@ def create_boolean(size):
 							 (2, 3, 7, 6),
 							 (4, 7, 3, 0)])
 	ob.scale = ((size, size, size))
+	ob.hide_render = True
 	return ob
 	
 def create_shadow(size):
@@ -91,6 +92,7 @@ def create_camera(matrix):
 
 def create_light(matrix, lamptype="AREA"):
 	lampd = bpy.data.lights.new(lamptype, lamptype)
+	lampd.energy = 2.5
 	ob = create_ob(lamptype, lampd)
 	ob.matrix_local = matrix
 	print("created lamp",lamptype)
@@ -191,7 +193,8 @@ def render_sprites(batch=False):
 	print("Render Area:",size)
 	print("Render Size:",16 * size)
 	
-	render = bpy.context.scene.render
+	scene = bpy.context.scene
+	render = scene.render
 	#16 pixels correspond to 1 ingame meter
 	render.resolution_x = 16 * size
 	render.resolution_y = 16 * size
@@ -199,13 +202,12 @@ def render_sprites(batch=False):
 	#render.use_file_extension
 	render.image_settings.file_format = "PNG"
 	render.image_settings.color_mode = "RGB"
-	# render.use_antialiasing = False
 	render.film_transparent = True
 	render.engine = "CYCLES"
 	
 	#alpha handling
 	#maybe put it in its own button, if somebody wants to alter the nodes
-	if not bpy.context.scene.use_nodes:
+	if not scene.use_nodes:
 		setup_compositor_nodes()
 	
 	dir_root = render.filepath
@@ -222,9 +224,9 @@ def render_sprites(batch=False):
 	matrix = mathutils.Matrix()
 	matrix.translation = mathutils.Vector((0, 0, 10))
 	
-	if "AREA" not in bpy.data.lights:
-		hemi = create_light(matrix)
-		hemi.data.use_shadow = False
+	# if "AREA" not in bpy.data.lights:
+		# hemi = create_light(matrix)
+		# hemi.data.use_shadow = False
 	if "SUN" not in bpy.data.lights:
 		sun = create_light(matrix, lamptype = "SUN")
 		# sun.data.shadow_method = "RAY_SHADOW"
@@ -292,9 +294,9 @@ def render_sprites(batch=False):
 				 ("N", 180))
 		for action in render_actions:
 			#set the duration for this animation
-			bpy.context.scene.frame_start = action.frame_range[0]
+			scene.frame_start = action.frame_range[0]
 			#skip the last frame, a to avoid looping issues and b because we don't need it anyway
-			bpy.context.scene.frame_end = action.frame_range[1]-1
+			scene.frame_end = action.frame_range[1]-1
 			
 			armature.animation_data.action = action
 			try:
@@ -328,13 +330,14 @@ def render_sprites(batch=False):
 				boolean.location[2] = -0.1
 				shadow.location[2] = 0
 			
-			# #only shadow
-			# if "#" in action.name:
-				# for ob in obs:
-					# ob.data.materials[0].use_cast_shadows_only = True
-			# else:
-				# for ob in obs:
-					# ob.data.materials[0].use_cast_shadows_only = False
+			# render only shadow
+			if "#" in action.name:
+				for ob in obs:
+					ob.cycles_visibility.camera = False
+			# render all objects
+			else:
+				for ob in obs:
+					ob.cycles_visibility.camera = True
 				
 			for view, rot in views:
 				print(view,rot)
@@ -485,7 +488,7 @@ def convert_sprites():
 		
 '''UI STUFF'''
 	
-class ZT1RenderPanel(bpy.types.Panel):
+class OBJECT_PT_ZT1RenderPanel(bpy.types.Panel):
 	bl_label = "ZT1 Sprite Rendering"
 	bl_space_type = "PROPERTIES"
 	bl_region_type = "WINDOW"
@@ -494,9 +497,9 @@ class ZT1RenderPanel(bpy.types.Panel):
 	def draw(self, context):
 		self.layout.operator("render.zt1spritesbatch", text='Render all Sprites', icon='RENDER_ANIMATION')
 		self.layout.operator("render.zt1spritescurrent", text='Render Current Anim', icon='RENDER_ANIMATION')
-		self.layout.operator("render.zt1generatepalette", text='Generate Color Palette')#, icon='RENDER_ANIMATION')
-		self.layout.operator("render.zt1spritesconvert", text='Convert Sprites to ZT1')#, icon='RENDER_ANIMATION')
-		self.layout.operator("render.zt1remaptime", text='Remap Action Time')#, icon='RENDER_ANIMATION')
+		self.layout.operator("render.zt1generatepalette", text='Generate Color Palette')
+		self.layout.operator("render.zt1spritesconvert", text='Convert Sprites to ZT1')
+		self.layout.operator("render.zt1remaptime", text='Remap Action Time')
 		self.layout.operator("render.zt1blockx", text='Mute Bip01 X Movement')
 		self.layout.operator("render.zt1blocky", text='Mute Bip01 Y Movement')
 		self.layout.operator("render.zt1blockz", text='Mute Bip01 Z Movement')
@@ -504,6 +507,7 @@ class ZT1RenderPanel(bpy.types.Panel):
 class OBJECT_OT_ZT1RenderGeneratePalette(bpy.types.Operator):
 	bl_idname = "render.zt1generatepalette"
 	bl_label = "Generate Color Palette"
+	bl_description = "After you have rendered images, you need to create a palette of the 255 most important colors."
 	def execute(self, context):
 		generate_palette( )
 		return{'FINISHED'}
@@ -511,6 +515,7 @@ class OBJECT_OT_ZT1RenderGeneratePalette(bpy.types.Operator):
 class OBJECT_OT_ZT1RenderButtonConvert(bpy.types.Operator):
 	bl_idname = "render.zt1spritesconvert"
 	bl_label = "Convert Sprites to ZT1 Graphics"
+	bl_description = "After you have created a palette, this will first reduce all images to your palette's colors and then convert to ZT1 graphics."
 	def execute(self, context):
 		convert_sprites( )
 		return{'FINISHED'}
@@ -518,6 +523,7 @@ class OBJECT_OT_ZT1RenderButtonConvert(bpy.types.Operator):
 class OBJECT_OT_ZT1RenderButtonBatch(bpy.types.Operator):
 	bl_idname = "render.zt1spritesbatch"
 	bl_label = "Render All Sprites"
+	bl_description = "Render all sprites for all actions and views"
 	def execute(self, context):
 		render_sprites(batch=True)
 		return{'FINISHED'}
@@ -566,7 +572,7 @@ def register():
 	bpy.utils.register_class(OBJECT_OT_ZT1BlockX)
 	bpy.utils.register_class(OBJECT_OT_ZT1BlockY)
 	bpy.utils.register_class(OBJECT_OT_ZT1BlockZ)
-	bpy.utils.register_class(ZT1RenderPanel)
+	bpy.utils.register_class(OBJECT_PT_ZT1RenderPanel)
 
 def unregister():
 	bpy.utils.unregister_class(OBJECT_OT_ZT1RenderButtonBatch)
@@ -577,7 +583,7 @@ def unregister():
 	bpy.utils.unregister_class(OBJECT_OT_ZT1BlockX)
 	bpy.utils.unregister_class(OBJECT_OT_ZT1BlockY)
 	bpy.utils.unregister_class(OBJECT_OT_ZT1BlockZ)
-	bpy.utils.unregister_class(ZT1RenderPanel)
+	bpy.utils.unregister_class(OBJECT_PT_ZT1RenderPanel)
 
 if __name__ == "__main__":
 	register()
