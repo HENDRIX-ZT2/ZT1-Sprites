@@ -201,7 +201,7 @@ def render_sprites(batch=False):
 	render.image_settings.color_mode = "RGB"
 	# render.use_antialiasing = False
 	render.film_transparent = True
-	render.engine = "Cycles"
+	render.engine = "CYCLES"
 	
 	#alpha handling
 	#maybe put it in its own button, if somebody wants to alter the nodes
