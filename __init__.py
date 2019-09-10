@@ -212,8 +212,9 @@ def render_sprites(batch=False):
 	
 	dir_root = render.filepath
 	
-	matrix = mathutils.Euler((math.radians(45), math.radians(0), math.radians(0))).to_matrix().to_4x4()
-	matrix.translation = mathutils.Vector((0, -10, 10))
+	# dimetric 2:1 projection looks down by 30° from horizontal
+	matrix = mathutils.Euler((math.radians(60), 0, 0)).to_matrix().to_4x4()
+	matrix.translation = mathutils.Vector((0, -10, 5.86))
 	
 	if "CAMERA" not in bpy.data.cameras:
 		camera = create_camera(matrix).data
