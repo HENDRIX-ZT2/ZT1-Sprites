@@ -199,7 +199,7 @@ def render_sprites(batch=False):
 	#maybe put it in its own button, if somebody wants to alter the nodes
 	if not bpy.context.scene.use_nodes:
 		setup_compositor_nodes()
-	bpy.context.scene.render.use_antialiasing = False
+	# bpy.context.scene.render.use_antialiasing = False
 	
 	dir_root = bpy.context.scene.render.filepath
 	
