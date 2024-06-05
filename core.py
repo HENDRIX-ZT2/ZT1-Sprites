@@ -16,9 +16,14 @@ ROOT_NODES = (
 )
 
 
+def create_ob(name, data):
+	ob = bpy.data.objects.new(name, data)
+	bpy.context.scene.objects.link(ob)
+	return ob
+
+
 def create_empty(parent, name, matrix):
-	empty = bpy.data.objects.new(name, None)
-	bpy.context.scene.objects.link(empty)
+	empty = create_ob(name, None)
 	if parent:
 		empty.parent = parent
 	empty.matrix_local = matrix
@@ -45,11 +50,9 @@ def create_boolean(size):
 					(1, 2, 6, 5),
 					(2, 3, 7, 6),
 					(4, 7, 3, 0)])
-
 	me.update()
-	ob = bpy.data.objects.new(shadowname, me)
+	ob = create_ob(shadowname, me)
 	ob.scale = (size, size, size)
-	bpy.context.scene.objects.link(ob)
 	ob.layers = select_layer(7)
 	return ob
 
@@ -59,9 +62,8 @@ def create_shadow(size):
 	me = bpy.data.meshes.new(shadowname)
 	me.from_pydata(((1, 1, 0), (1, -1, 0), (-1, 1, 0), (-1, -1, 0)), (), ((2, 3, 1, 0),))
 	me.update()
-	ob = bpy.data.objects.new(shadowname, me)
+	ob = create_ob(shadowname, me)
 	ob.scale = (size, size, size)
-	bpy.context.scene.objects.link(ob)
 	if shadowname not in bpy.data.materials:
 		mat = bpy.data.materials.new(shadowname)
 		mat.use_only_shadow = True
@@ -77,9 +79,9 @@ def create_shadow(size):
 
 
 def create_camera(matrix):
-	camd = bpy.data.cameras.new("CAMERA")
-	cam = bpy.data.objects.new("CAMERA", camd)
-	bpy.context.scene.objects.link(cam)
+	name = "CAMERA"
+	camd = bpy.data.cameras.new(name)
+	cam = create_ob(name, camd)
 	cam.matrix_local = matrix
 	camd.type = "ORTHO"
 	bpy.context.scene.camera = cam
@@ -89,8 +91,7 @@ def create_camera(matrix):
 
 def create_lamp(matrix, lamptype="HEMI"):
 	lampd = bpy.data.lamps.new(lamptype, lamptype)
-	lamp = bpy.data.objects.new(lamptype, lampd)
-	bpy.context.scene.objects.link(lamp)
+	lamp = create_ob(lamptype, lampd)
 	lamp.matrix_local = matrix
 	print("created lamp", lamptype)
 	return lamp
