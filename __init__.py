@@ -8,10 +8,10 @@ bl_info = {
 	"category": "Render"}
 
 import bpy
-from operators import OBJECT_OT_ZT1RenderGeneratePalette, OBJECT_OT_ZT1RenderButtonConvert, \
+from .operators import OBJECT_OT_ZT1RenderGeneratePalette, OBJECT_OT_ZT1RenderButtonConvert, \
 	OBJECT_OT_ZT1RenderButtonBatch, OBJECT_OT_ZT1RenderButtonCurrent, OBJECT_OT_ZT1BlockX, OBJECT_OT_ZT1BlockY, \
 	OBJECT_OT_ZT1BlockZ, OBJECT_OT_ZT1RemapTime
-from panels import ZT1RenderPanel
+from .panels import ZT1RenderPanel
 
 
 classes = (

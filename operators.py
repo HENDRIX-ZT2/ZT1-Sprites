@@ -1,6 +1,6 @@
 import bpy
 
-from core import *
+from .core import *
 
 
 class OBJECT_OT_ZT1RenderGeneratePalette(bpy.types.Operator):
