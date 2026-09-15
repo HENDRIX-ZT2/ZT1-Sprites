@@ -4,6 +4,7 @@ import mathutils
 import math
 import os
 import time
+import typing
 import subprocess
 
 
@@ -88,6 +89,157 @@ def create_shadow(size):
 		# mat.shadow_only_type = "SHADOW_ONLY"
 		# mat.use_transparent_shadow = True
 		# mat.use_transparency = True
+
+		mat = bpy.data.materials.new(name="mat")
+		if bpy.app.version < (5, 0, 0):
+			mat.use_nodes = True
+
+		mat.alpha_threshold = 0.5
+		mat.line_priority = 0
+		mat.max_vertex_displacement = 0.0
+		mat.metallic = 0.0
+		mat.paint_active_slot = 0
+		mat.paint_clone_slot = 0
+		mat.pass_index = 0
+		mat.refraction_depth = 0.0
+		mat.roughness = 0.4000000059604645
+		mat.show_transparent_back = True
+		mat.specular_intensity = 0.5
+		mat.use_backface_culling = False
+		mat.use_backface_culling_lightprobe_volume = True
+		mat.use_backface_culling_shadow = True
+		mat.use_preview_world = False
+		mat.use_raytrace_refraction = False
+		mat.use_screen_refraction = False
+		mat.use_sss_translucency = False
+		mat.use_thickness_from_shadow = False
+		mat.use_transparency_overlap = True
+		mat.use_transparent_shadow = True
+		mat.blend_method = 'BLEND'
+		mat.displacement_method = 'BUMP'
+		mat.preview_render_type = 'SPHERE'
+		mat.surface_render_method = 'BLENDED'
+		mat.thickness_mode = 'SPHERE'
+		mat.volume_intersection_method = 'FAST'
+		mat.specular_color = (1.0, 1.0, 1.0)
+		mat.diffuse_color = (0.800000011920929, 0.800000011920929, 0.800000011920929, 1.0)
+		mat.line_color = (0.0, 0.0, 0.0, 0.0)
+		shader_nodetree = mat.node_tree
+
+		# Start with a clean node tree
+		for node in shader_nodetree.nodes:
+			shader_nodetree.nodes.remove(node)
+		shader_nodetree.color_tag = 'NONE'
+		shader_nodetree.description = ""
+		shader_nodetree.default_group_node_width = 140
+		# Initialize shader_nodetree nodes
+
+		# Node Material Output
+		material_output = shader_nodetree.nodes.new("ShaderNodeOutputMaterial")
+		material_output.name = "Material Output"
+		material_output.show_options = True
+		material_output.is_active_output = True
+		material_output.target = 'ALL'
+		# Displacement
+		material_output.inputs[2].default_value = (0.0, 0.0, 0.0)
+		# Thickness
+		material_output.inputs[3].default_value = 0.0
+
+		# Node Transparent BSDF
+		transparent_bsdf = shader_nodetree.nodes.new("ShaderNodeBsdfTransparent")
+		transparent_bsdf.name = "Transparent BSDF"
+		transparent_bsdf.show_options = True
+		# Color
+		transparent_bsdf.inputs[0].default_value = (1.0, 1.0, 1.0, 1.0)
+
+		# Node Shader to RGB
+		shader_to_rgb = shader_nodetree.nodes.new("ShaderNodeShaderToRGB")
+		shader_to_rgb.name = "Shader to RGB"
+		shader_to_rgb.show_options = True
+
+		# Node Mix Shader
+		mix_shader = shader_nodetree.nodes.new("ShaderNodeMixShader")
+		mix_shader.name = "Mix Shader"
+		mix_shader.show_options = True
+
+		# Node Diffuse BSDF
+		diffuse_bsdf = shader_nodetree.nodes.new("ShaderNodeBsdfDiffuse")
+		diffuse_bsdf.name = "Diffuse BSDF"
+		diffuse_bsdf.show_options = True
+		# Color
+		diffuse_bsdf.inputs[0].default_value = (0.0, 0.0, 0.0, 1.0)
+		# Roughness
+		diffuse_bsdf.inputs[1].default_value = 0.0
+		# Normal
+		diffuse_bsdf.inputs[2].default_value = (0.0, 0.0, 0.0)
+
+		# Node Diffuse BSDF.001
+		diffuse_bsdf_001 = shader_nodetree.nodes.new("ShaderNodeBsdfDiffuse")
+		diffuse_bsdf_001.name = "Diffuse BSDF.001"
+		diffuse_bsdf_001.show_options = True
+		# Color
+		diffuse_bsdf_001.inputs[0].default_value = (1.0, 1.0, 1.0, 1.0)
+		# Roughness
+		diffuse_bsdf_001.inputs[1].default_value = 0.0
+		# Normal
+		diffuse_bsdf_001.inputs[2].default_value = (0.0, 0.0, 0.0)
+
+		# Set locations
+		shader_nodetree.nodes["Material Output"].location = (552.9533081054688, 204.5115966796875)
+		shader_nodetree.nodes["Transparent BSDF"].location = (103.09483337402344, 42.084007263183594)
+		shader_nodetree.nodes["Shader to RGB"].location = (104.91618347167969, 322.7973327636719)
+		shader_nodetree.nodes["Mix Shader"].location = (346.4410400390625, 188.92868041992188)
+		shader_nodetree.nodes["Diffuse BSDF"].location = (90.50019836425781, 189.77584838867188)
+		shader_nodetree.nodes["Diffuse BSDF.001"].location = (-119.81158447265625, 311.6890869140625)
+
+		# Set dimensions
+		shader_nodetree.nodes["Material Output"].width = 140.0
+		shader_nodetree.nodes["Material Output"].height = 100.0
+
+		shader_nodetree.nodes["Transparent BSDF"].width = 140.0
+		shader_nodetree.nodes["Transparent BSDF"].height = 100.0
+
+		shader_nodetree.nodes["Shader to RGB"].width = 140.0
+		shader_nodetree.nodes["Shader to RGB"].height = 100.0
+
+		shader_nodetree.nodes["Mix Shader"].width = 140.0
+		shader_nodetree.nodes["Mix Shader"].height = 100.0
+
+		shader_nodetree.nodes["Diffuse BSDF"].width = 150.0
+		shader_nodetree.nodes["Diffuse BSDF"].height = 100.0
+
+		shader_nodetree.nodes["Diffuse BSDF.001"].width = 150.0
+		shader_nodetree.nodes["Diffuse BSDF.001"].height = 100.0
+
+		# Initialize shader_nodetree links
+
+		# diffuse_bsdf_001.BSDF -> shader_to_rgb.Shader
+		shader_nodetree.links.new(
+			shader_nodetree.nodes["Diffuse BSDF.001"].outputs[0],
+			shader_nodetree.nodes["Shader to RGB"].inputs[0]
+		)
+		# shader_to_rgb.Color -> mix_shader.Factor
+		shader_nodetree.links.new(
+			shader_nodetree.nodes["Shader to RGB"].outputs[0],
+			shader_nodetree.nodes["Mix Shader"].inputs[0]
+		)
+		# mix_shader.Shader -> material_output.Surface
+		shader_nodetree.links.new(
+			shader_nodetree.nodes["Mix Shader"].outputs[0],
+			shader_nodetree.nodes["Material Output"].inputs[0]
+		)
+		# diffuse_bsdf.BSDF -> mix_shader.Shader
+		shader_nodetree.links.new(
+			shader_nodetree.nodes["Diffuse BSDF"].outputs[0],
+			shader_nodetree.nodes["Mix Shader"].inputs[1]
+		)
+		# transparent_bsdf.BSDF -> mix_shader.Shader
+		shader_nodetree.links.new(
+			shader_nodetree.nodes["Transparent BSDF"].outputs[0],
+			shader_nodetree.nodes["Mix Shader"].inputs[2]
+		)
+
+
 	else:
 		mat = bpy.data.materials[shadowname]
 	me.materials.append(mat)
