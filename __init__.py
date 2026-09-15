@@ -1,7 +1,7 @@
 bl_info = {
 	"name": "Render ZT1 Sprites",
 	"author": "HENDRIX",
-	"blender": (2, 78, 0),
+	"blender": (5, 1, 0),
 	"location": "Render > ZT1 Sprites",
 	"description": "Sets up and renders sprites for all animations, for all angles.",
 	"warning": "",
@@ -11,7 +11,7 @@ import bpy
 from .operators import OBJECT_OT_ZT1RenderGeneratePalette, OBJECT_OT_ZT1RenderButtonConvert, \
 	OBJECT_OT_ZT1RenderButtonBatch, OBJECT_OT_ZT1RenderButtonCurrent, OBJECT_OT_ZT1BlockX, OBJECT_OT_ZT1BlockY, \
 	OBJECT_OT_ZT1BlockZ, OBJECT_OT_ZT1RemapTime
-from .panels import ZT1RenderPanel
+from .panels import ZT1_PT_render
 
 
 classes = (
@@ -23,7 +23,7 @@ classes = (
 	OBJECT_OT_ZT1BlockX,
 	OBJECT_OT_ZT1BlockY,
 	OBJECT_OT_ZT1BlockZ,
-	ZT1RenderPanel
+	ZT1_PT_render
 )
 
 

@@ -1,7 +1,7 @@
 import bpy
 
 
-class ZT1RenderPanel(bpy.types.Panel):
+class ZT1_PT_render(bpy.types.Panel):
 	bl_label = "ZT1 Sprite Rendering"
 	bl_space_type = "PROPERTIES"
 	bl_region_type = "WINDOW"
